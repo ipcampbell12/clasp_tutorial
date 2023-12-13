@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+     <style>
+
+
+      .loading {
+          background-color: bisque;
+          width: 100vw;
+          height: 100vh;
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index:100000;
+
+        }
+
+         .pt-40{
+          padding-top: 10rem;
+        }
+     </style>
+  </head>
+  <body>
+  <div>
+  <br>
+  <button onclick="google.script.run.createNewTab()" type="button" class="btn btn-info ms-5" id="query-tabs">Create New Tab</button>
+  <br>
+  <p id="query-to-copy" data-query="U_Students_Extension.EL_Followup=yes">  </p>
+   <div id="liveAlertPlaceholder-query"></div>
+  <br>
+  <button onclick="copyQuery()" type="button" class="btn btn-primary ms-5" id="query-btn">Copy Query</button>
+   <br>
+    <br>
+  <div id="fields-to-copy" data-fields="
+        student_number
+        lastfirst
+        grade_level
+        home_room
+        Enrollment_SchoolID
+        U_Students_Extension.Reg_Cmpltn_Date
+        U_Students_Extension.EL_Followup_Notes
+        "
+        >
+       
+  </div>
+  <div id="liveAlertPlaceholder"></div>
+  <br>
+  <button onclick="copyFields()" type="button" class="btn btn-secondary ms-5" id="fields-btn" style="text-align:center;">Copy Export Fields</button>
+  <br>
+  <br>
+  <br>
+  <button onclick="google.script.run.hideExtraSheets()" type="button" class="btn btn-warning ms-5" id="fields-btn" style="text-align:center;">Hide Extra Sheets</button>
+  <br>
+  <br>
+  <button onclick="informFolks()" type="button" class="btn btn-danger ms-5" id="fields-btn" style="text-align:center;">Send Followup Emails</button>
+
+</div>
+  <div id="loadingPlaceholder"></div>
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+    <script>
+    function copyQuery(){
+      copyToClipboard('query');
+    }
+
+    function copyFields(){
+      copyToClipboard('fields');
+    }
+      
+    function copyToClipboard(type) {
+      let str;
+      let alertTrigger;
+
+      const btns = {
+        "fields":"fields-btn",
+        "query": "query-btn"
+      }
+
+      if(type==='query'){
+         str = document.getElementById('query-to-copy').dataset.query;
+      }
+
+      if(type==='fields'){
+          str = document.getElementById('fields-to-copy').dataset.fields;
+      }
+
+      console.log(type)
+
+      const el = document.createElement('textarea');
+      el.value = str;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      alertTrigger=true;
+      console.log(alertTrigger)
+      const element = document.getElementById(btns[type])
+      console.log(element)
+     
+
+        if (alertTrigger) {
+           const alertPlaceholder = document.getElementById(`liveAlertPlaceholder-${type}`)
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = [
+              `
+              <br>
+              <div class="alert alert-success alert-dismissible" role="alert" id="alert">`,
+              `   <div>You have copied the ${type}!</div>`,
+              '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+              '</div>'
+            ].join('')
+            alertPlaceholder.append(wrapper)
+        }
+
+             setTimeout(()=>{
+             const element = document.getElementById("alert");
+             element.remove();
+          },2500)
+    }
+
+
+  function informFolks(){
+    addSpinner();
+    google.script.run.withSuccessHandler(onSuccess).sendEmails()
+  }
+
+    function onSuccess(){
+      removeSpinner();
+      const alertPlaceholder = document.getElementById(`liveAlertPlaceholder`)
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = [
+              `
+              <br>
+              <div class="alert alert-success alert-dismissible" role="alert" id="alert">`,
+              `   <div> Emails sent!</div>`,
+              '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+              '</div>'
+            ].join('')
+            alertPlaceholder.append(wrapper)
+            setTimeout(()=>{
+             const element = document.getElementById("alert");
+             element.remove();
+          },2500)
+    
+        }
+
+             
+
+   function removeSpinner(){
+        document.getElementById('loading').remove()
+     }
+
+
+
+    function addSpinner(){
+        const element = document.getElementById('loadingPlaceholder');
+        element.innerHTML =
+             ` <div id="loading" class="loading pt-40">
+                <div class="d-flex justify-content-center"  >
+                  <div>
+                  
+                      <div class="spinner-border" role="status" style="width: 4rem; height: 4rem;">
+                        <span class="visually-hidden">Loading...</span> 
+                      </div>
+                      <div>Loading... </div>
+                    </div>
+                  </div>
+                </div> 
+          `
+        
+     }
+     
+
+  
+
+
+    </script>
+  </body>
+</html>
+
